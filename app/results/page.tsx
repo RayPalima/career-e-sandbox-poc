@@ -1,10 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState } from "react";
 import AppNav from "@/src/components/AppNav";
 import AssessmentForm, { type AssessmentValues } from "@/src/components/AssessmentForm";
 import {
   FlaggedCard,
+  FavouriteCard,
   IconCheckCircle,
   IconWarningCircle,
   IconXCircle,
@@ -15,6 +16,7 @@ import {
   ALL_RESULT_SETS,
   CAREER_DOMAINS,
   type CareerDomain,
+  type CareerMatch,
   type ResultSet,
 } from "@/src/lib/mockData";
 
@@ -26,6 +28,18 @@ function pickRandom(current?: ResultSet): ResultSet {
   }
   const others = ALL_RESULT_SETS.filter((s) => s.id !== current.id);
   return others[Math.floor(Math.random() * others.length)];
+}
+
+function sortAlpha(careers: CareerMatch[]): CareerMatch[] {
+  return [...careers].sort((a, b) => a.title.localeCompare(b.title));
+}
+
+function StarFilledIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+    </svg>
+  );
 }
 
 function ChevronDown({ className = "w-4 h-4" }: { className?: string }) {
@@ -58,20 +72,39 @@ export default function ResultsPage() {
   const [activeTab, setActiveTab] = useState<"recommended" | "flagged">("recommended");
   const [domainFilter, setDomainFilter] = useState<CareerDomain>("All Domains");
   const [isCalculating, setIsCalculating] = useState(false);
+  const [favourites, setFavourites] = useState<Set<string>>(new Set());
   const isCalculatingRef = useRef(false);
 
-  const recommended = resultSet.careers.filter(
-    (c) =>
-      c.status === "recommended" &&
-      (domainFilter === "All Domains" || c.domain === domainFilter)
-  );
-  const flagged = resultSet.careers.filter(
-    (c) =>
-      c.status === "flagged" &&
-      (domainFilter === "All Domains" || c.domain === domainFilter)
+  const allRecommended = sortAlpha(
+    resultSet.careers.filter(
+      (c) =>
+        c.status === "recommended" &&
+        (domainFilter === "All Domains" || c.domain === domainFilter)
+    )
   );
 
-  const [primaryCard, ...secondaryCards] = recommended;
+  const flagged = resultSet.careers
+    .filter(
+      (c) =>
+        c.status === "flagged" &&
+        (domainFilter === "All Domains" || c.domain === domainFilter)
+    )
+    .sort((a, b) => a.matchPercent - b.matchPercent)
+    .slice(0, 10);
+
+  // Primary is always the first recommended card — fixed, never gets replaced
+  const primaryCard = allRecommended.length > 0 ? allRecommended[0] : undefined;
+  const primaryIsFavourited = primaryCard ? favourites.has(primaryCard.id) : false;
+  const favouriteCards = allRecommended.filter((c) => favourites.has(c.id));
+  const gridCards = allRecommended.slice(1).filter((c) => !favourites.has(c.id));
+
+  function toggleFavourite(id: string) {
+    setFavourites((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
 
   function handleSubmit() {
     if (isCalculatingRef.current) return;
@@ -81,6 +114,7 @@ export default function ResultsPage() {
       setResultSet((prev) => pickRandom(prev));
       setActiveTab("recommended");
       setDomainFilter("All Domains");
+      setFavourites(new Set());
       setIsCalculating(false);
       isCalculatingRef.current = false;
     }, 700);
@@ -89,7 +123,6 @@ export default function ResultsPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleValuesChange(_next: AssessmentValues) {
     // Form values are captured but don't drive result selection in this PoC.
-    // A real implementation would pass them to the LLM agent here.
   }
 
   return (
@@ -97,12 +130,11 @@ export default function ResultsPage() {
       className="min-h-screen bg-[#F8FAFC]"
       style={{ fontFamily: "var(--font-geist-sans, Geist, sans-serif)" }}
     >
-      <AppNav active="results" />
+      <AppNav active="search" />
 
       <div className="flex min-h-[calc(100vh-56px)]">
         {/* ── Collapsible Sidebar ── */}
         <div className={`relative flex-shrink-0 transition-all duration-300 ${sidebarOpen ? "w-80" : "w-10"} hidden md:block`}>
-          {/* Sidebar content */}
           <div
             className={`absolute inset-0 overflow-hidden transition-opacity duration-200 ${
               sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
@@ -116,11 +148,10 @@ export default function ResultsPage() {
             />
           </div>
 
-          {/* Collapse toggle tab — top-right corner */}
           <button
             onClick={() => setSidebarOpen((o) => !o)}
             title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-            className="absolute top-3 -right-3 z-10 w-6 h-6 bg-white border border-[#e2e8f0] rounded-full shadow-sm flex items-center justify-center text-[#5826d1] hover:bg-[#f5f0ff] transition-colors"
+            className="absolute top-3 -right-3 z-10 w-6 h-6 bg-white border border-[#e2e8f0] rounded-full shadow-sm flex items-center justify-center text-[#1a56db] hover:bg-[#eff6ff] transition-colors"
           >
             {sidebarOpen ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
           </button>
@@ -136,16 +167,27 @@ export default function ResultsPage() {
               </h1>
             </div>
 
-            {/* Domain filter */}
-            <div className="shrink-0">
-              <p className="text-[10px] font-bold text-[#7a7486] uppercase tracking-widest mb-1.5">
-                Filter Domain
-              </p>
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-3 shrink-0">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 border border-[#e2e8f0] bg-white text-[#494455] font-semibold text-sm px-4 py-2 rounded-lg shadow-sm hover:border-[#1a56db] hover:text-[#1a56db] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share / Export
+              </button>
+
+              {/* Domain filter */}
+              <div>
+                <p className="text-[10px] font-bold text-[#7a7486] uppercase tracking-widest mb-1.5">
+                  Filter Domain
+                </p>
+                <div className="relative">
                 <select
                   value={domainFilter}
                   onChange={(e) => setDomainFilter(e.target.value as CareerDomain)}
-                  className="appearance-none bg-white border border-[#e2e8f0] rounded-lg px-4 py-2 text-sm text-[#0b1c30] pr-10 shadow-sm focus:outline-none focus:border-[#5826d1] min-w-[168px] cursor-pointer"
+                  className="appearance-none bg-white border border-[#e2e8f0] rounded-lg px-4 py-2 text-sm text-[#0b1c30] pr-10 shadow-sm focus:outline-none focus:border-[#1a56db] min-w-[168px] cursor-pointer"
                 >
                   {CAREER_DOMAINS.map((d) => (
                     <option key={d} value={d}>
@@ -157,33 +199,42 @@ export default function ResultsPage() {
                   <ChevronDown />
                 </span>
               </div>
+              </div>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-6 border-b border-[#e2e8f0] mb-6">
-            <button
-              onClick={() => setActiveTab("recommended")}
-              className={`flex items-center gap-2 pb-3 text-sm font-semibold transition-colors whitespace-nowrap -mb-px ${
-                activeTab === "recommended"
-                  ? "text-[#5826d1] border-b-2 border-[#5826d1]"
-                  : "text-[#7a7486] hover:text-[#494455]"
-              }`}
-            >
-              <IconCheckCircle className="w-4 h-4" />
-              Recommended Paths ({recommended.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("flagged")}
-              className={`flex items-center gap-2 pb-3 text-sm font-semibold transition-colors whitespace-nowrap -mb-px ${
-                activeTab === "flagged"
-                  ? "text-[#ba1a1a] border-b-2 border-[#ba1a1a]"
-                  : "text-[#7a7486] hover:text-[#494455]"
-              }`}
-            >
-              <IconXCircle className="w-4 h-4" />
-              Non-Recommended ({flagged.length})
-            </button>
+          <div className="flex items-center justify-between border-b border-[#e2e8f0] mb-6">
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => setActiveTab("recommended")}
+                className={`flex items-center gap-2 pb-3 text-sm font-semibold transition-colors whitespace-nowrap -mb-px ${
+                  activeTab === "recommended"
+                    ? "text-[#1a56db] border-b-2 border-[#1a56db]"
+                    : "text-[#7a7486] hover:text-[#494455]"
+                }`}
+              >
+                <IconCheckCircle className="w-4 h-4" />
+                Recommended Paths ({allRecommended.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("flagged")}
+                className={`flex items-center gap-2 pb-3 text-sm font-semibold transition-colors whitespace-nowrap -mb-px ${
+                  activeTab === "flagged"
+                    ? "text-[#ba1a1a] border-b-2 border-[#ba1a1a]"
+                    : "text-[#7a7486] hover:text-[#494455]"
+                }`}
+              >
+                <IconXCircle className="w-4 h-4" />
+                Non-Recommended ({flagged.length})
+              </button>
+            </div>
+            {activeTab === "recommended" && (
+              <p className="text-[11px] text-[#7a7486] pb-3 hidden sm:flex items-center gap-1 shrink-0">
+                <StarFilledIcon className="w-3 h-3 text-[#f59e0b]" />
+                Star a result to save it to your favourites
+              </p>
+            )}
           </div>
 
           {/* Cards */}
@@ -204,16 +255,46 @@ export default function ResultsPage() {
                 </div>
               </div>
             ) : activeTab === "recommended" ? (
-              recommended.length === 0 ? (
+              allRecommended.length === 0 ? (
                 <EmptyState domain={domainFilter} />
               ) : (
-                <div className="space-y-4">
-                  {primaryCard && <PrimaryCard career={primaryCard} />}
-                  {secondaryCards.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {secondaryCards.map((c) => (
-                        <SecondaryCard key={c.id} career={c} />
-                      ))}
+                <div className="space-y-6">
+                  {/* Favourites section */}
+                  {favouriteCards.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <StarFilledIcon className="w-5 h-5 text-[#f59e0b]" />
+                        <h2 className="text-base font-bold text-[#0b1c30]">Favourites ({favouriteCards.length})</h2>
+                      </div>
+                      <p className="text-sm text-[#494455] mb-4">These are the favourites from your current results, and will be added to the list on your main dashboard.</p>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                        {favouriteCards.map((c) => (
+                          <FavouriteCard key={c.id} career={c} favourites={favourites} onToggleFavourite={toggleFavourite} />
+                        ))}
+                      </div>
+                      <div className="border-t border-[#e2e8f0] mt-6" />
+                    </div>
+                  )}
+
+                  {/* Primary card — only shown when not favourited */}
+                  {primaryCard && !primaryIsFavourited && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-[#0b1c30] mb-1">Best Match</h2>
+                      <p className="text-sm text-[#494455] mb-4">This career path is the most aligned with your personality and preferences.</p>
+                      <PrimaryCard career={primaryCard} favourites={favourites} onToggleFavourite={toggleFavourite} />
+                    </div>
+                  )}
+
+                  {/* Grid cards — all non-primary non-favourited */}
+                  {gridCards.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-semibold text-[#0b1c30] mb-1">Other Considerable Options</h2>
+                      <p className="text-sm text-[#494455] mb-4">Additional career paths that match your profile well, worth exploring further.</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {gridCards.map((c) => (
+                          <SecondaryCard key={c.id} career={c} favourites={favourites} onToggleFavourite={toggleFavourite} />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -222,14 +303,11 @@ export default function ResultsPage() {
               <EmptyState domain={domainFilter} />
             ) : (
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <IconWarningCircle className="w-5 h-5 text-[#d97706] shrink-0" />
-                  <h2 className="text-2xl font-bold text-[#d97706]">Careers to Avoid</h2>
-                </div>
+                <h2 className="text-2xl font-bold text-[#0b1c30] mb-1">Careers to Avoid</h2>
                 <p className="text-sm text-[#494455] mb-5">
                   These paths severely conflict with your personality profile and preferences.
                 </p>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {flagged.map((c) => (
                     <FlaggedCard key={c.id} career={c} />
                   ))}
@@ -246,14 +324,14 @@ export default function ResultsPage() {
 function EmptyState({ domain }: { domain: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-12 h-12 rounded-full bg-[#e5eeff] flex items-center justify-center mb-4">
-        <svg className="w-6 h-6 text-[#5826d1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="w-12 h-12 rounded-full bg-[#dbeafe] flex items-center justify-center mb-4">
+        <svg className="w-6 h-6 text-[#1a56db]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
       <p className="text-[#0b1c30] font-semibold text-base mb-1">No results in this domain</p>
       <p className="text-sm text-[#7a7486]">
-        No careers match the <span className="font-medium text-[#5826d1]">{domain}</span> filter in this result set.
+        No careers match the <span className="font-medium text-[#1a56db]">{domain}</span> filter in this result set.
         Try a different domain or click Submit for a new set.
       </p>
     </div>

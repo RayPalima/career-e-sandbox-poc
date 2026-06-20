@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -40,13 +40,13 @@ export default function UserMenu() {
       <div className="flex items-center gap-4">
         <Link
           href="/login"
-          className="text-sm font-semibold text-[#5826d1] border-2 border-[#5826d1] px-4 py-1.5 rounded hover:bg-[#5826d1]/5 transition-colors hidden sm:inline-flex"
+          className="text-sm font-semibold text-[#1a56db] border-2 border-[#1a56db] px-4 py-1.5 rounded hover:bg-[#1a56db]/5 transition-colors hidden sm:inline-flex"
         >
           Log In
         </Link>
         <Link
           href="/create-account"
-          className="bg-[#5826d1] text-white text-sm font-semibold px-4 py-1.5 rounded hover:bg-[#4000ae] transition-colors"
+          className="bg-[#1a56db] text-white text-sm font-semibold px-4 py-1.5 rounded hover:bg-[#1648c4] transition-colors"
         >
           Create Account
         </Link>
@@ -59,7 +59,7 @@ export default function UserMenu() {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex items-center gap-2 text-sm font-semibold text-[#0b1c30] hover:text-[#5826d1] transition-colors"
+        className="flex items-center gap-2 text-sm font-semibold text-[#0b1c30] hover:text-[#1a56db] transition-colors"
       >
         <span>{user.name}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />

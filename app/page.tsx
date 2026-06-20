@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import LandingNav from "@/src/components/LandingNav";
 
 // ── Icons ──────────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ function ResultsPreviewMock() {
               {label}
             </div>
           ))}
-          <div className="mt-2 bg-[#5826d1] rounded text-[7px] text-white text-center py-1 font-semibold">Submit</div>
+          <div className="mt-2 bg-[#1a56db] rounded text-[7px] text-white text-center py-1 font-semibold">Submit</div>
         </div>
 
         {/* Main results area */}
@@ -88,14 +88,14 @@ function ResultsPreviewMock() {
 
           {/* Tabs */}
           <div className="flex gap-4 border-b border-[#e2e8f0] mb-3 text-[9px] sm:text-[10px] font-semibold">
-            <span className="text-[#5826d1] border-b-2 border-[#5826d1] pb-1.5">Recommended (5)</span>
+            <span className="text-[#1a56db] border-b-2 border-[#1a56db] pb-1.5">Recommended (5)</span>
             <span className="text-[#7a7486] pb-1.5">Non-Recommended (5)</span>
           </div>
 
           {/* Primary card */}
           <div className="bg-white rounded-lg border border-[#e2e8f0] p-3 mb-2">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[9px] font-bold text-[#5826d1] bg-[#e5eeff] px-2 py-0.5 rounded-full">96% Match</span>
+              <span className="text-[9px] font-bold text-[#1a56db] bg-[#dbeafe] px-2 py-0.5 rounded-full">96% Match</span>
               <span className="text-[8px] font-bold text-[#7a7486] uppercase">Technology</span>
             </div>
             <p className="text-xs font-bold text-[#0b1c30] mb-2">Data Scientist / ML Engineer</p>
@@ -129,7 +129,7 @@ function ResultsPreviewMock() {
               { pct: "85%", title: "Cybersecurity Architect" },
             ].map((card) => (
               <div key={card.title} className="bg-white rounded-lg border border-[#e2e8f0] p-2">
-                <span className="text-[8px] font-bold text-[#5826d1] bg-[#e5eeff] px-1.5 py-0.5 rounded-full">{card.pct} Match</span>
+                <span className="text-[8px] font-bold text-[#1a56db] bg-[#dbeafe] px-1.5 py-0.5 rounded-full">{card.pct} Match</span>
                 <p className="text-[9px] font-bold text-[#0b1c30] mt-1 leading-tight">{card.title}</p>
               </div>
             ))}
@@ -147,7 +147,7 @@ const HOW_IT_WORKS = [
     step: "01",
     icon: <IconBrain />,
     title: "Input Your Results",
-    body: "Plug in your scores from the personality tests you've already taken. We cover 9 different models, including MBTI, Big Five, and CliftonStrengths.",
+    body: "Plug in your scores from the personality tests you've already taken. We cover 8 different models, including MBTI, Big Five, and CliftonStrengths.",
   },
   {
     step: "02",
@@ -165,61 +165,52 @@ const HOW_IT_WORKS = [
 
 const FRAMEWORKS = [
   {
-    name: "Myers-Briggs (MBTI)",
-    category: "Personality Type",
-    descriptor: "16 cognitive preference types across 4 dichotomies.",
+    name: "Astrology",
+    category: "Celestial Influence",
+    descriptor: "Sun-sign archetypes as a supplementary lens.",
     index: "01",
-  },
-  {
-    name: "Sparketype",
-    category: "Energy & Purpose",
-    descriptor: "Identifies the work that makes you feel most alive.",
-    index: "02",
-  },
-  {
-    name: "CliftonStrengths",
-    category: "Talent Profile",
-    descriptor: "34-theme strengths inventory from Gallup research.",
-    index: "03",
   },
   {
     name: "Big Five Model",
     category: "Trait Psychology",
     descriptor: "OCEAN: the gold standard in personality science.",
+    index: "02",
+  },
+  {
+    name: "Chinese Zodiac",
+    category: "Eastern Framework",
+    descriptor: "12-animal cycle with 5-element elemental modifiers.",
+    index: "03",
+  },
+  {
+    name: "CliftonStrengths",
+    category: "Talent Profile",
+    descriptor: "34-theme strengths inventory from Gallup research.",
     index: "04",
-  },
-  {
-    name: "Enneagram",
-    category: "Motivational Type",
-    descriptor: "9 types mapping core fears, desires, and growth paths.",
-    index: "05",
-  },
-  {
-    name: "Conscious Marketer Archetype",
-    category: "Brand & Identity",
-    descriptor: "12 universal archetypes for values-aligned positioning.",
-    index: "06",
   },
   {
     name: "DiSC Assessment",
     category: "Behavioral Style",
     descriptor: "Dominance, Influence, Steadiness, Conscientiousness.",
+    index: "05",
+  },
+  {
+    name: "Enneagram",
+    category: "Motivational Type",
+    descriptor: "9 types mapping core fears, desires, and growth paths.",
+    index: "06",
+  },
+  {
+    name: "Myers-Briggs (MBTI)",
+    category: "Personality Type",
+    descriptor: "16 cognitive preference types across 4 dichotomies.",
     index: "07",
   },
-];
-
-const RESEARCH_FRAMEWORKS = [
   {
-    name: "Chinese Zodiac",
-    category: "Eastern Framework",
-    descriptor: "12-animal cycle with 5-element elemental modifiers.",
+    name: "Sparketype",
+    category: "Energy & Purpose",
+    descriptor: "Identifies the work that makes you feel most alive.",
     index: "08",
-  },
-  {
-    name: "Astrology",
-    category: "Celestial Influence",
-    descriptor: "Sun-sign archetypes as a supplementary lens.",
-    index: "09",
   },
 ];
 
@@ -240,24 +231,21 @@ export default function LandingPage() {
 
           <h1 className="font-bold leading-[1.1] tracking-tight mb-6">
             <span className="block text-4xl sm:text-5xl md:text-[3.75rem] text-[#0b1c30]">
-              Lost In Your Degree?
+              Need Career Clarity?
             </span>
-            <span className="block text-2xl sm:text-3xl md:text-4xl text-[#5826d1] mt-2">
-              Lets find other Opportunities.
+            <span className="block text-2xl sm:text-3xl md:text-4xl text-[#1a56db] mt-2">
+              Explore the possibilities.
             </span>
           </h1>
 
           <p className="text-lg md:text-xl text-[#494455] leading-relaxed max-w-2xl mx-auto mb-10">
-            Career-E-Sandbox takes results from up to{" "}
-            <span className="font-semibold text-[#0b1c30]">9 personality tests</span>{" "}
-            and suggests career paths built around your profile. For every match, you&apos;ll also see real
-            market details like salary, growth outlook, education required, and more.
+            Career E-Sandbox takes results from popular personality tests and gives you visibility into career paths for your profile.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/create-account"
-              className="inline-flex items-center gap-2 bg-[#5826d1] text-white font-semibold text-base px-7 py-3.5 rounded hover:bg-[#4000ae] transition-colors shadow-[0_4px_14px_rgba(88,38,209,0.3)]"
+              className="inline-flex items-center gap-2 bg-[#1a56db] text-white font-semibold text-base px-7 py-3.5 rounded hover:bg-[#1648c4] transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
             >
               Start your search
               <IconArrowRight />
@@ -267,16 +255,13 @@ export default function LandingPage() {
       </section>
 
       {/* ══ How It Works ════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className="bg-[#5826d1] py-20 px-6">
+      <section id="how-it-works" className="bg-[#1a56db] py-20 px-6">
         <div className="max-w-5xl mx-auto">
 
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
               How It Works
             </h2>
-            <p className="text-base text-[#c9b9ff] mt-3 max-w-xl mx-auto">
-              Three deliberate steps. One precise, personalized career trajectory.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -287,10 +272,10 @@ export default function LandingPage() {
               >
                 {/* Step number + icon */}
                 <div className="flex items-start justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-[#e5eeff] flex items-center justify-center text-[#5826d1]">
+                  <div className="w-12 h-12 rounded-xl bg-[#dbeafe] flex items-center justify-center text-[#1a56db]">
                     {step.icon}
                   </div>
-                  <span className="text-3xl font-bold text-[#5826d1] leading-none select-none">
+                  <span className="text-3xl font-bold text-[#1a56db] leading-none select-none">
                     {step.step}
                   </span>
                 </div>
@@ -309,7 +294,7 @@ export default function LandingPage() {
 
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-[#0b1c30] tracking-tight">
-              9 Personality Frameworks
+              8 Personality Frameworks
             </h2>
           </div>
 
@@ -317,10 +302,9 @@ export default function LandingPage() {
             {FRAMEWORKS.map((fw) => (
               <div
                 key={fw.name}
-                className="group flex items-start gap-4 bg-white border border-[#e2e8f0] rounded-xl p-5 hover:border-[#5826d1]/40 hover:shadow-[0_4px_20px_rgba(88,38,209,0.07)] transition-all"
+                className="group flex items-start gap-4 bg-white border border-[#e2e8f0] rounded-xl p-5 hover:border-[#1a56db]/40 hover:shadow-[0_4px_20px_rgba(15,23,42,0.06)] transition-all"
               >
-                {/* Index badge */}
-                <span className="shrink-0 w-8 h-8 rounded-lg bg-[#F8FAFC] border border-[#e2e8f0] flex items-center justify-center text-[10px] font-bold text-[#7a7486] group-hover:bg-[#e5eeff] group-hover:text-[#5826d1] group-hover:border-[#5826d1]/30 transition-colors">
+                <span className="shrink-0 w-8 h-8 rounded-lg bg-[#F8FAFC] border border-[#e2e8f0] flex items-center justify-center text-[10px] font-bold text-[#7a7486] group-hover:bg-[#dbeafe] group-hover:text-[#1a56db] group-hover:border-[#1a56db]/30 transition-colors">
                   {fw.index}
                 </span>
                 <div>
@@ -332,31 +316,6 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="mt-10 pt-8 border-t border-[#e2e8f0]">
-            <p className="text-xs font-bold text-[#7a7486] uppercase tracking-widest mb-4 text-center">
-              For Educational / Research Purposes
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-              {RESEARCH_FRAMEWORKS.map((fw) => (
-                <div
-                  key={fw.name}
-                  className="group flex items-start gap-4 bg-[#F8FAFC] border border-dashed border-[#e2e8f0] rounded-xl p-5"
-                >
-                  <span className="shrink-0 w-8 h-8 rounded-lg bg-white border border-[#e2e8f0] flex items-center justify-center text-[10px] font-bold text-[#7a7486]">
-                    {fw.index}
-                  </span>
-                  <div>
-                    <p className="text-[10px] font-bold text-[#7a7486] uppercase tracking-widest mb-0.5">
-                      {fw.category}
-                    </p>
-                    <p className="text-sm font-bold text-[#0b1c30] mb-1">{fw.name}</p>
-                    <p className="text-xs text-[#494455] leading-relaxed">{fw.descriptor}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -386,7 +345,7 @@ export default function LandingPage() {
 
               <Link
                 href="/create-account"
-                className="inline-flex items-center gap-2 bg-[#5826d1] text-white font-semibold text-sm px-6 py-3 rounded hover:bg-[#4000ae] transition-colors"
+                className="inline-flex items-center gap-2 bg-[#1a56db] text-white font-semibold text-sm px-6 py-3 rounded hover:bg-[#1648c4] transition-colors"
               >
                 Start your search
                 <IconArrowRight />
@@ -399,7 +358,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ Footer ══════════════════════════════════════════════════════ */}
-      <section className="bg-[#5826d1] py-12 px-6">
+      <section className="bg-[#1a56db] py-12 px-6">
         <div className="max-w-2xl mx-auto text-center space-y-3">
           <p className="text-xs text-[#c9b9ff] leading-relaxed max-w-md mx-auto">
             <span className="font-semibold text-white">Early-Stage Research Beta Disclaimer:</span>{" "}

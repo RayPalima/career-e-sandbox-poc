@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 
 export default function LandingNav() {
   return (
-    <nav className="bg-white border-b border-[#5826d1] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-20 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+    <nav className="bg-white border-b border-[#1a56db] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-20 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
       <div className="flex items-center gap-7">
         <Link href="/" className="text-base font-bold text-[#0b1c30] tracking-tight">
           Career-E-Sandbox
@@ -18,13 +18,13 @@ export default function LandingNav() {
       <div className="flex items-center gap-4">
         <Link
           href="/login"
-          className="text-sm font-semibold text-[#5826d1] border-2 border-[#5826d1] px-4 py-1.5 rounded hover:bg-[#5826d1]/5 transition-colors hidden sm:inline-flex"
+          className="text-sm font-semibold text-[#1a56db] border-2 border-[#1a56db] px-4 py-1.5 rounded hover:bg-[#1a56db]/5 transition-colors hidden sm:inline-flex"
         >
           Log In
         </Link>
         <Link
           href="/create-account"
-          className="bg-[#5826d1] text-white text-sm font-semibold px-4 py-1.5 rounded hover:bg-[#4000ae] transition-colors"
+          className="bg-[#1a56db] text-white text-sm font-semibold px-4 py-1.5 rounded hover:bg-[#1648c4] transition-colors"
         >
           Create an Account
         </Link>

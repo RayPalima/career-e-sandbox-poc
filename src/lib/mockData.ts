@@ -1393,6 +1393,7 @@ export const CAREER_DOMAINS = [
   "All Domains",
   "Technology",
   "Finance",
+  "Health",
   "Medical",
   "Law",
   "Business",

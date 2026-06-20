@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { mbtiOptions } from "@/src/lib/mockData";
@@ -10,7 +10,6 @@ import {
   EDU_TARGET_LABELS,
   ENNEAGRAM_OPTIONS,
   GENDER_OPTIONS,
-  MARKETER_ARCHETYPES,
   ORG_OPTIONS,
   RACE_OPTIONS,
   SPARKETYPE_OPTIONS,
@@ -32,6 +31,7 @@ export interface AssessmentValues {
 
 interface AssessmentFormProps {
   layout: "sidebar" | "page";
+  preload?: boolean;
   onMbtiChange?: (type: string) => void;
   onValuesChange?: (values: AssessmentValues) => void;
   onSubmit?: () => void;
@@ -74,7 +74,7 @@ function StyledSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none bg-white border border-[#e2e8f0] rounded px-3 py-2 text-sm text-[#0b1c30] pr-8 focus:outline-none focus:border-[#5826d1] cursor-pointer"
+        className="w-full appearance-none bg-white border border-[#e2e8f0] rounded px-3 py-2 text-sm text-[#0b1c30] pr-8 focus:outline-none focus:border-[#1a56db] cursor-pointer"
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map((o) => (
@@ -104,8 +104,8 @@ function PillGroup<T extends string>({
           onClick={() => onChange(o)}
           className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors ${
             value === o
-              ? "bg-[#5826d1] text-white border border-[#5826d1]"
-              : "bg-white text-[#494455] border border-[#e2e8f0] hover:border-[#5826d1]"
+              ? "bg-[#1a56db] text-white border border-[#1a56db]"
+              : "bg-white text-[#494455] border border-[#e2e8f0] hover:border-[#1a56db]"
           }`}
         >
           {o}
@@ -138,12 +138,12 @@ function BigFiveSlider({
     <div>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-sm text-[#0b1c30]">{label}</span>
-        <span className="text-xs font-bold text-[#5826d1] w-20 text-right">{descriptor} ({value})</span>
+        <span className="text-xs font-bold text-[#1a56db] w-20 text-right">{descriptor} ({value})</span>
       </div>
       <input
         type="range" min="0" max="100" value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-[#5826d1] cursor-pointer"
+        className="w-full accent-[#1a56db] cursor-pointer"
       />
       <div className="flex justify-between mt-0.5">
         <span className="text-[9px] text-[#7a7486]">Low</span>
@@ -175,12 +175,12 @@ function AccordionSection({
         }`}
       >
         <span>{title}</span>
-        <span className={isOpen ? "text-[#5826d1]" : "text-[#7a7486]"}>
+        <span className={isOpen ? "text-[#1a56db]" : "text-[#7a7486]"}>
           {isOpen ? <ChevronUp /> : <ChevronDown />}
         </span>
       </button>
       {isOpen && (
-        <div className={`${compact ? "px-6" : "px-5"} pb-5 bg-[#f8f9ff] border-t border-[#5826d1]/20`}>
+        <div className={`${compact ? "px-6" : "px-5"} pb-5 bg-[#f8f9ff] border-t border-[#1a56db]/20`}>
           <div className="pt-4 space-y-4">{children}</div>
         </div>
       )}
@@ -190,30 +190,24 @@ function AccordionSection({
 
 function InlineHelpPanel({ helpKey }: { helpKey: keyof typeof ASSESSMENT_HELP }) {
   const help = ASSESSMENT_HELP[helpKey];
+  const isPlaceholder = help.providerUrl === "#" || help.providerUrl.startsWith("[");
   return (
     <div className="rounded-lg border border-[#e2e8f0] bg-[#f8f9ff] p-4 space-y-3">
       <p className="text-xs text-[#494455] leading-relaxed">{help.description}</p>
-      {help.providerUrl !== "#" && (
+      {isPlaceholder ? (
+        <span className="text-xs font-semibold text-[#7a7486] inline-block">
+          {help.providerLabel} — {help.providerUrl}
+        </span>
+      ) : (
         <a
           href={help.providerUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-semibold text-[#5826d1] hover:underline inline-block"
+          className="text-xs font-semibold text-[#1a56db] hover:underline inline-block"
         >
           {help.providerLabel} ↗
         </a>
       )}
-      <div>
-        <p className="text-[10px] font-bold text-[#7a7486] uppercase tracking-widest mb-2">Good to know</p>
-        <ul className="space-y-1.5">
-          {help.goodToKnow.map((tip) => (
-            <li key={tip} className="text-xs text-[#0b1c30] leading-relaxed flex gap-1.5">
-              <span className="text-[#5826d1] shrink-0">•</span>
-              {tip}
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 }
@@ -246,8 +240,8 @@ function CollapsibleCard({
             aria-expanded={helpOpen}
             className={`w-8 h-8 rounded-lg border font-bold text-sm leading-none transition-colors ${
               helpOpen
-                ? "bg-[#5826d1] border-[#5826d1] text-white"
-                : "border-[#e2e8f0] text-[#7a7486] hover:border-[#5826d1] hover:text-[#5826d1]"
+                ? "bg-[#1a56db] border-[#1a56db] text-white"
+                : "border-[#e2e8f0] text-[#7a7486] hover:border-[#1a56db] hover:text-[#1a56db]"
             }`}
           >
             ?
@@ -257,7 +251,7 @@ function CollapsibleCard({
             onClick={onToggle}
             aria-expanded={isOpen}
             aria-controls={`section-${id}`}
-            className="w-8 h-8 rounded-lg border border-[#e2e8f0] text-[#5826d1] font-bold text-lg leading-none hover:bg-[#e5eeff] hover:border-[#5826d1] transition-colors"
+            className="w-8 h-8 rounded-lg border border-[#e2e8f0] text-[#1a56db] font-bold text-lg leading-none hover:bg-[#dbeafe] hover:border-[#1a56db] transition-colors"
           >
             {isOpen ? "−" : "+"}
           </button>
@@ -288,13 +282,13 @@ function OptionalFieldBlock({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`rounded-lg border p-4 transition-colors ${enabled ? "border-[#5826d1]/30 bg-[#f8f9ff]" : "border-[#e2e8f0] bg-white"}`}>
+    <div className={`rounded-lg border p-4 transition-colors ${enabled ? "border-[#1a56db]/30 bg-[#f8f9ff]" : "border-[#e2e8f0] bg-white"}`}>
       <label className="flex items-start gap-3 cursor-pointer">
         <input
           type="checkbox"
           checked={enabled}
           onChange={onToggle}
-          className="w-4 h-4 mt-0.5 accent-[#5826d1] cursor-pointer shrink-0"
+          className="w-4 h-4 mt-0.5 accent-[#1a56db] cursor-pointer shrink-0"
         />
         <div>
           <span className="text-sm font-semibold text-[#0b1c30] block">{label}</span>
@@ -308,38 +302,39 @@ function OptionalFieldBlock({
 
 export default function AssessmentForm({
   layout,
+  preload = false,
   onMbtiChange,
   onValuesChange,
   onSubmit,
   isLoading,
 }: AssessmentFormProps) {
+  const usePrefill = layout === "sidebar" || preload;
   const [sidebarTab, setSidebarTab] = useState<"assessments" | "additional">("assessments");
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [enabledOptional, setEnabledOptional] = useState<Set<string>>(new Set());
 
   const [mbtiType, setMbtiType] = useState("INTJ");
   const [variant, setVariant] = useState<"A" | "T">("A");
-  const [primarySpark, setPrimarySpark] = useState(layout === "sidebar" ? "Maven" : "");
-  const [secondarySpark, setSecondarySpark] = useState(layout === "sidebar" ? "Sage" : "");
-  const [antiSpark, setAntiSpark] = useState(layout === "sidebar" ? "Advisor" : "");
+  const [primarySpark, setPrimarySpark] = useState(usePrefill ? "Maven" : "");
+  const [secondarySpark, setSecondarySpark] = useState(usePrefill ? "Sage" : "");
+  const [antiSpark, setAntiSpark] = useState(usePrefill ? "Advisor" : "");
   const [strengths, setStrengths] = useState(
-    layout === "sidebar"
+    usePrefill
       ? ["Strategic", "Learner", "Analytical", "Ideation", ""]
       : ["", "", "", "", ""]
   );
   const [bigFive, setBigFive] = useState({ O: 65, C: 70, E: 30, A: 55, N: 40 });
-  const [enneagramType, setEnneagramType] = useState(layout === "sidebar" ? "Type 5 — Investigator" : "");
-  const [marketerArchetype, setMarketerArchetype] = useState(layout === "sidebar" ? "The Expert" : "");
-  const [discStyle, setDiscStyle] = useState(layout === "sidebar" ? "Conscientiousness (C)" : "");
-  const [zodiacAnimal, setZodiacAnimal] = useState(layout === "sidebar" ? "Dragon" : "");
-  const [zodiacElement, setZodiacElement] = useState(layout === "sidebar" ? "Water" : "");
-  const [sunSign, setSunSign] = useState(layout === "sidebar" ? "Scorpio" : "");
+  const [enneagramType, setEnneagramType] = useState(usePrefill ? "Type 5 — Investigator" : "");
+  const [discStyle, setDiscStyle] = useState(usePrefill ? "Conscientiousness (C)" : "");
+  const [zodiacAnimal, setZodiacAnimal] = useState(usePrefill ? "Dragon" : "");
+  const [zodiacElement, setZodiacElement] = useState(usePrefill ? "Water" : "");
+  const [sunSign, setSunSign] = useState(usePrefill ? "Scorpio" : "");
   const [workEnv, setWorkEnv] = useState<WorkEnv>("Fully Remote");
   const [orgStructure, setOrgStructure] = useState<OrgStructure>("Hierarchical");
   const [targetEduIndex, setTargetEduIndex] = useState(3);
   const [taskDislikes, setTaskDislikes] = useState<Set<string>>(new Set());
-  const [ageRange, setAgeRange] = useState(layout === "sidebar" ? "22-25" : "");
-  const [gender, setGender] = useState(layout === "sidebar" ? "Prefer not to say" : "");
+  const [ageRange, setAgeRange] = useState(usePrefill ? "22-25" : "");
+  const [gender, setGender] = useState(usePrefill ? "Prefer not to say" : "");
   const [race, setRace] = useState("");
 
   const onValuesChangeRef = useRef(onValuesChange);
@@ -420,8 +415,8 @@ export default function AssessmentForm({
               onClick={() => setVariant(v)}
               className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors ${
                 variant === v
-                  ? "bg-[#5826d1] text-white"
-                  : "bg-white text-[#494455] border border-[#e2e8f0] hover:border-[#5826d1]"
+                  ? "bg-[#1a56db] text-white"
+                  : "bg-white text-[#494455] border border-[#e2e8f0] hover:border-[#1a56db]"
               }`}
             >
               {v === "A" ? "Assertive (-A)" : "Turbulent (-T)"}
@@ -493,9 +488,9 @@ export default function AssessmentForm({
       >
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs text-[#494455]">Current anchor</span>
-          <span className="text-xs font-bold text-[#5826d1]">{EDU_TARGET_LABELS[targetEduIndex]}</span>
+          <span className="text-xs font-bold text-[#1a56db]">{EDU_TARGET_LABELS[targetEduIndex]}</span>
         </div>
-        <input type="range" min="0" max={EDU_TARGET_LABELS.length - 1} value={targetEduIndex} onChange={(e) => setTargetEduIndex(Number(e.target.value))} className="w-full accent-[#5826d1] cursor-pointer" />
+        <input type="range" min="0" max={EDU_TARGET_LABELS.length - 1} value={targetEduIndex} onChange={(e) => setTargetEduIndex(Number(e.target.value))} className="w-full accent-[#1a56db] cursor-pointer" />
         <div className="flex justify-between mt-1.5">
           {EDU_TARGET_LABELS.map((l) => (
             <span key={l} className="text-[9px] text-[#7a7486]">{l.split(" ")[0]}</span>
@@ -512,7 +507,7 @@ export default function AssessmentForm({
         <div className="space-y-2.5">
           {TASK_DISLIKE_OPTIONS.map((task) => (
             <label key={task} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="checkbox" checked={taskDislikes.has(task)} onChange={() => toggleTaskDislike(task)} className="w-4 h-4 accent-[#5826d1] cursor-pointer" />
+              <input type="checkbox" checked={taskDislikes.has(task)} onChange={() => toggleTaskDislike(task)} className="w-4 h-4 accent-[#1a56db] cursor-pointer" />
               <span className="text-sm text-[#494455] group-hover:text-[#0b1c30] transition-colors">{task}</span>
             </label>
           ))}
@@ -561,9 +556,9 @@ export default function AssessmentForm({
       <div>
         <div className="flex items-center justify-between mb-3">
           <p className="text-[10px] font-bold text-[#7a7486] uppercase tracking-[0.15em]">Target Education Level</p>
-          <span className="text-xs font-bold text-[#5826d1]">{EDU_TARGET_LABELS[targetEduIndex]}</span>
+          <span className="text-xs font-bold text-[#1a56db]">{EDU_TARGET_LABELS[targetEduIndex]}</span>
         </div>
-        <input type="range" min="0" max={EDU_TARGET_LABELS.length - 1} value={targetEduIndex} onChange={(e) => setTargetEduIndex(Number(e.target.value))} className="w-full accent-[#5826d1] cursor-pointer" />
+        <input type="range" min="0" max={EDU_TARGET_LABELS.length - 1} value={targetEduIndex} onChange={(e) => setTargetEduIndex(Number(e.target.value))} className="w-full accent-[#1a56db] cursor-pointer" />
         <div className="flex justify-between mt-1.5">
           {EDU_TARGET_LABELS.map((l) => (
             <span key={l} className="text-[9px] text-[#7a7486]">{l.split(" ")[0]}</span>
@@ -575,7 +570,7 @@ export default function AssessmentForm({
         <div className="space-y-2.5">
           {TASK_DISLIKE_OPTIONS.map((task) => (
             <label key={task} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="checkbox" checked={taskDislikes.has(task)} onChange={() => toggleTaskDislike(task)} className="w-4 h-4 accent-[#5826d1] cursor-pointer" />
+              <input type="checkbox" checked={taskDislikes.has(task)} onChange={() => toggleTaskDislike(task)} className="w-4 h-4 accent-[#1a56db] cursor-pointer" />
               <span className="text-sm text-[#494455] group-hover:text-[#0b1c30] transition-colors">{task}</span>
             </label>
           ))}
@@ -598,11 +593,10 @@ export default function AssessmentForm({
       { id: "clifton", title: "CliftonStrengths", helpKey: "clifton" as const, content: cliftonFields },
       { id: "bigfive", title: "Big Five Model", helpKey: "bigfive" as const, content: bigFiveFields },
       { id: "ennea", title: "Enneagram", helpKey: "ennea" as const, content: <div><FieldLabel>Core Type</FieldLabel><StyledSelect value={enneagramType} onChange={setEnneagramType} options={ENNEAGRAM_OPTIONS} placeholder="Select type..." /></div> },
-      { id: "marketer", title: "Conscious Marketer Archetype", helpKey: "marketer" as const, content: <div><FieldLabel>Archetype</FieldLabel><StyledSelect value={marketerArchetype} onChange={setMarketerArchetype} options={MARKETER_ARCHETYPES} placeholder="Select archetype..." /></div> },
       { id: "disc", title: "DiSC Assessment", helpKey: "disc" as const, content: <div><FieldLabel>Primary Style</FieldLabel><StyledSelect value={discStyle} onChange={setDiscStyle} options={DISC_STYLES} placeholder="Select style..." /></div> },
       { id: "zodiac", title: "Chinese Zodiac", helpKey: "zodiac" as const, content: <><div><FieldLabel>Animal</FieldLabel><StyledSelect value={zodiacAnimal} onChange={setZodiacAnimal} options={ZODIAC_ANIMALS} placeholder="Select animal..." /></div><div><FieldLabel>Element</FieldLabel><StyledSelect value={zodiacElement} onChange={setZodiacElement} options={ZODIAC_ELEMENTS} placeholder="Select element..." /></div></> },
       { id: "astro", title: "Astrology", helpKey: "astro" as const, content: <div><FieldLabel>Sun Sign</FieldLabel><StyledSelect value={sunSign} onChange={setSunSign} options={SUN_SIGNS} placeholder="Select sign..." /></div> },
-    ];
+    ].sort((a, b) => a.title.localeCompare(b.title));
 
     return (
       <form
@@ -612,13 +606,13 @@ export default function AssessmentForm({
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-[#0b1c30] tracking-tight">Career Search</h1>
           <p className="text-sm md:text-base text-[#494455] mt-2">
-            Use <span className="font-semibold text-[#5826d1]">+</span> to expand inputs and <span className="font-semibold text-[#5826d1]">?</span> for inline guidance.
+            Please enter your personality assessment results below. Use <span className="font-semibold text-[#1a56db]">+</span> to expand inputs and <span className="font-semibold text-[#1a56db]">?</span> for inline guidance.
           </p>
         </div>
 
         <div>
-          <h2 className="text-xs font-bold text-[#5826d1] uppercase tracking-widest mb-4">Core Assessments</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <h2 className="text-xs font-bold text-[#1a56db] uppercase tracking-widest mb-4">Assessments</h2>
+          <div className="grid grid-cols-1 gap-5">
             {assessmentCards.map((card) => (
               <CollapsibleCard
                 key={card.id}
@@ -635,7 +629,7 @@ export default function AssessmentForm({
         </div>
 
         <div>
-          <h2 className="text-xs font-bold text-[#5826d1] uppercase tracking-widest mb-4">Additional Information</h2>
+          <h2 className="text-xs font-bold text-[#1a56db] uppercase tracking-widest mb-4">Additional Information</h2>
           <CollapsibleCard
             id="additional"
             title="Optional Inputs"
@@ -651,7 +645,7 @@ export default function AssessmentForm({
           <button
             type="submit"
             disabled={isLoading}
-            className="inline-flex items-center gap-2 bg-[#5826d1] text-white font-semibold text-base px-8 py-3.5 rounded hover:bg-[#4000ae] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 bg-[#1a56db] text-white font-semibold text-base px-8 py-3.5 rounded hover:bg-[#1648c4] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
@@ -682,7 +676,7 @@ export default function AssessmentForm({
             onClick={() => setSidebarTab(tab)}
             className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
               sidebarTab === tab
-                ? "text-[#5826d1] border-b-2 border-[#5826d1] -mb-px"
+                ? "text-[#1a56db] border-b-2 border-[#1a56db] -mb-px"
                 : "text-[#7a7486] hover:text-[#494455]"
             }`}
           >
@@ -694,26 +688,23 @@ export default function AssessmentForm({
       <div className="flex-1 overflow-y-auto min-h-0">
         {sidebarTab === "assessments" && (
           <div>
-            <AccordionSection title="Myers-Briggs (MBTI)" isOpen={openSections.has("mbti")} onToggle={() => toggleSection("mbti")} compact>{mbtiFields}</AccordionSection>
-            <AccordionSection title="Sparketype" isOpen={openSections.has("spark")} onToggle={() => toggleSection("spark")} compact>{sparkFields}</AccordionSection>
-            <AccordionSection title="CliftonStrengths" isOpen={openSections.has("clifton")} onToggle={() => toggleSection("clifton")} compact>{cliftonFields}</AccordionSection>
+            <AccordionSection title="Astrology" isOpen={openSections.has("astro")} onToggle={() => toggleSection("astro")} compact>
+              <div><FieldLabel>Sun Sign</FieldLabel><StyledSelect value={sunSign} onChange={setSunSign} options={SUN_SIGNS} placeholder="Select sign..." /></div>
+            </AccordionSection>
             <AccordionSection title="Big Five Model" isOpen={openSections.has("bigfive")} onToggle={() => toggleSection("bigfive")} compact>{bigFiveFields}</AccordionSection>
-            <AccordionSection title="Enneagram" isOpen={openSections.has("ennea")} onToggle={() => toggleSection("ennea")} compact>
-              <div><FieldLabel>Core Type</FieldLabel><StyledSelect value={enneagramType} onChange={setEnneagramType} options={ENNEAGRAM_OPTIONS} placeholder="Select type..." /></div>
-            </AccordionSection>
-            <AccordionSection title="Conscious Marketer Archetype" isOpen={openSections.has("marketer")} onToggle={() => toggleSection("marketer")} compact>
-              <div><FieldLabel>Archetype</FieldLabel><StyledSelect value={marketerArchetype} onChange={setMarketerArchetype} options={MARKETER_ARCHETYPES} placeholder="Select archetype..." /></div>
-            </AccordionSection>
-            <AccordionSection title="DiSC Assessment" isOpen={openSections.has("disc")} onToggle={() => toggleSection("disc")} compact>
-              <div><FieldLabel>Primary Style</FieldLabel><StyledSelect value={discStyle} onChange={setDiscStyle} options={DISC_STYLES} placeholder="Select style..." /></div>
-            </AccordionSection>
             <AccordionSection title="Chinese Zodiac" isOpen={openSections.has("zodiac")} onToggle={() => toggleSection("zodiac")} compact>
               <div><FieldLabel>Animal</FieldLabel><StyledSelect value={zodiacAnimal} onChange={setZodiacAnimal} options={ZODIAC_ANIMALS} placeholder="Select animal..." /></div>
               <div><FieldLabel>Element</FieldLabel><StyledSelect value={zodiacElement} onChange={setZodiacElement} options={ZODIAC_ELEMENTS} placeholder="Select element..." /></div>
             </AccordionSection>
-            <AccordionSection title="Astrology" isOpen={openSections.has("astro")} onToggle={() => toggleSection("astro")} compact>
-              <div><FieldLabel>Sun Sign</FieldLabel><StyledSelect value={sunSign} onChange={setSunSign} options={SUN_SIGNS} placeholder="Select sign..." /></div>
+            <AccordionSection title="CliftonStrengths" isOpen={openSections.has("clifton")} onToggle={() => toggleSection("clifton")} compact>{cliftonFields}</AccordionSection>
+            <AccordionSection title="DiSC Assessment" isOpen={openSections.has("disc")} onToggle={() => toggleSection("disc")} compact>
+              <div><FieldLabel>Primary Style</FieldLabel><StyledSelect value={discStyle} onChange={setDiscStyle} options={DISC_STYLES} placeholder="Select style..." /></div>
             </AccordionSection>
+            <AccordionSection title="Enneagram" isOpen={openSections.has("ennea")} onToggle={() => toggleSection("ennea")} compact>
+              <div><FieldLabel>Core Type</FieldLabel><StyledSelect value={enneagramType} onChange={setEnneagramType} options={ENNEAGRAM_OPTIONS} placeholder="Select type..." /></div>
+            </AccordionSection>
+            <AccordionSection title="Myers-Briggs (MBTI)" isOpen={openSections.has("mbti")} onToggle={() => toggleSection("mbti")} compact>{mbtiFields}</AccordionSection>
+            <AccordionSection title="Sparketype" isOpen={openSections.has("spark")} onToggle={() => toggleSection("spark")} compact>{sparkFields}</AccordionSection>
           </div>
         )}
         {sidebarTab === "additional" && (
@@ -726,7 +717,7 @@ export default function AssessmentForm({
               type="button"
               onClick={onSubmit}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-[#5826d1] text-white font-semibold text-sm py-2.5 rounded hover:bg-[#4000ae] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-[#1a56db] text-white font-semibold text-sm py-2.5 rounded hover:bg-[#1648c4] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

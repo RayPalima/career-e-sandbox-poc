@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -15,12 +15,12 @@ export default function LoginPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     signIn({ email });
-    router.push("/results");
+    router.push("/dashboard");
   }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]" style={{ fontFamily: "var(--font-geist-sans, Geist, sans-serif)" }}>
-      <AppNav active="home" />
+      <AppNav active="dashboard" />
       <main className="flex items-center justify-center p-6 min-h-[calc(100vh-56px)]">
         <div className="w-full max-w-md bg-white rounded-xl border border-[#e2e8f0] shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-8">
           <h1 className="text-2xl font-bold text-[#0b1c30] mb-1">Log In</h1>
@@ -36,7 +36,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@email.com"
-                className="w-full border border-[#e2e8f0] rounded px-3 py-2.5 text-sm text-[#0b1c30] focus:outline-none focus:border-[#5826d1]"
+                className="w-full border border-[#e2e8f0] rounded px-3 py-2.5 text-sm text-[#0b1c30] focus:outline-none focus:border-[#1a56db]"
               />
             </div>
             <div>
@@ -48,12 +48,12 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full border border-[#e2e8f0] rounded px-3 py-2.5 text-sm text-[#0b1c30] focus:outline-none focus:border-[#5826d1]"
+                className="w-full border border-[#e2e8f0] rounded px-3 py-2.5 text-sm text-[#0b1c30] focus:outline-none focus:border-[#1a56db]"
               />
             </div>
             <button
               type="submit"
-              className="w-full bg-[#5826d1] text-white font-semibold text-sm py-3 rounded hover:bg-[#4000ae] transition-colors"
+              className="w-full bg-[#1a56db] text-white font-semibold text-sm py-3 rounded hover:bg-[#1648c4] transition-colors"
             >
               Log In
             </button>
@@ -61,7 +61,7 @@ export default function LoginPage() {
 
           <p className="text-sm text-[#494455] text-center mt-6">
             Don&apos;t have an account?{" "}
-            <Link href="/create-account" className="text-[#5826d1] font-semibold hover:underline">
+            <Link href="/create-account" className="text-[#1a56db] font-semibold hover:underline">
               Create one
             </Link>
           </p>
