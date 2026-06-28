@@ -53,10 +53,28 @@ export const SUN_SIGNS = [
 ].map((s) => ({ value: s, label: s }));
 
 export const TASK_DISLIKE_OPTIONS = [
-  "Outdoors",
+  "Cold Outreach / Sales",
+  "Repetitive Manual Tasks",
+  "Public Speaking / Presentations",
+  "Client-Facing / Customer Service",
+  "Team Management / People Leadership",
+  "Administrative Paperwork",
+  "Data Entry",
+  "Tight / Unpredictable Deadlines",
+  "On-Call or Shift Work",
+  "Heavy Travel Requirements",
+  "Networking Events / Social Functions",
+  "Deep Independent Research",
+  "Detailed Technical Writing",
+  "Financial Reporting / Accounting",
+  "Legal / Compliance Work",
+  "Creative Work (Design / Writing)",
   "Physical Labour",
-  "Heavy Reading / Writing",
-  "Science Labs",
+  "Outdoors / Field Work",
+  "Science Labs / Lab Bench Work",
+  "Teaching / Training Others",
+  "Event Planning / Logistics",
+  "Cross-Functional Collaboration (no solo work)",
 ] as const;
 
 export const AGE_RANGES = [

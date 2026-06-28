@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AppNav from "@/src/components/AppNav";
 import { DEFAULT_USER_EMAIL, DEFAULT_USER_NAME, useAuth } from "@/src/components/AuthProvider";
 
@@ -9,7 +10,7 @@ import { DEFAULT_USER_EMAIL, DEFAULT_USER_NAME, useAuth } from "@/src/components
 
 const LAST_SEARCH_DATE = "Jun 12, 2026";
 
-const PERSONALITY_SNAPSHOT = [
+const ASSESSMENT_SNAPSHOT = [
   { label: "MBTI", value: "INTJ-A" },
   { label: "Sparketype", value: "Maven · Sage · Anti: Advisor" },
   { label: "Enneagram", value: "Type 5 — Investigator" },
@@ -18,6 +19,9 @@ const PERSONALITY_SNAPSHOT = [
   { label: "CliftonStrengths", value: "Strategic · Learner · Analytical · Ideation" },
   { label: "Chinese Zodiac", value: "Dragon — Water" },
   { label: "Astrology", value: "Scorpio" },
+];
+
+const PREFERENCE_SNAPSHOT = [
   { label: "Work Environment", value: "Fully Remote" },
   { label: "Target Education", value: "Master's Degree" },
   { label: "Task Dislikes", value: "Cold Outreach / Sales · Repetitive Manual Tasks" },
@@ -56,6 +60,7 @@ const RECENT_HISTORY = [
 
 type FavItem = {
   id: string;
+  careerSlug: string;
   title: string;
   sector: string;
   matchPercent: number;
@@ -72,6 +77,7 @@ type FavItem = {
 const INITIAL_FAVOURITES: FavItem[] = [
   {
     id: "fav-1",
+    careerSlug: "data-scientist",
     title: "Data Scientist / Systems Architect",
     sector: "TECHNOLOGY",
     matchPercent: 94,
@@ -93,6 +99,7 @@ const INITIAL_FAVOURITES: FavItem[] = [
   },
   {
     id: "fav-2",
+    careerSlug: "research-scientist",
     title: "Research Scientist",
     sector: "ACADEMIA / RESEARCH",
     matchPercent: 88,
@@ -114,6 +121,7 @@ const INITIAL_FAVOURITES: FavItem[] = [
   },
   {
     id: "fav-3",
+    careerSlug: "ux-research-lead",
     title: "UX Research Lead / Design Strategist",
     sector: "DESIGN / CREATIVE",
     matchPercent: 93,
@@ -135,6 +143,7 @@ const INITIAL_FAVOURITES: FavItem[] = [
   },
   {
     id: "fav-4",
+    careerSlug: "management-consultant",
     title: "Management Consultant",
     sector: "BUSINESS / CONSULTING",
     matchPercent: 81,
@@ -230,12 +239,13 @@ function MatchBadge({ pct }: { pct: number }) {
 
 function DashFavCard({ fav, onDelete }: { fav: FavItem; onDelete: (id: string) => void }) {
   const [confirming, setConfirming] = useState(false);
+  const router = useRouter();
 
   return (
-    <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-4 hover:shadow-[0_4px_16px_rgba(15,23,42,0.06)] transition-shadow flex flex-col h-full">
+    <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(15,23,42,0.06)] transition-shadow flex flex-col h-full overflow-hidden">
       {confirming ? (
         /* ── Confirmation state ── */
-        <div className="flex flex-col items-center justify-center flex-1 min-h-[140px] text-center gap-3 py-4">
+        <div className="flex flex-col items-center justify-center flex-1 min-h-[140px] text-center gap-3 p-4 py-6">
           <div className="w-9 h-9 rounded-full bg-[#fef2f2] flex items-center justify-center mb-1">
             <IconTrash />
           </div>
@@ -261,12 +271,12 @@ function DashFavCard({ fav, onDelete }: { fav: FavItem; onDelete: (id: string) =
       ) : (
         /* ── Normal card content ── */
         <>
-          {/* Header */}
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
+          {/* Header row — not part of the clickable link */}
+          <div className="flex items-center gap-2 px-4 pt-4 pb-2 flex-wrap">
             <MatchBadge pct={fav.matchPercent} />
             <span className="text-[10px] font-bold text-[#7a7486] uppercase tracking-widest">{fav.sector}</span>
             <button
-              onClick={() => setConfirming(true)}
+              onClick={(e) => { e.stopPropagation(); setConfirming(true); }}
               title="Remove from favourites"
               className="ml-auto w-7 h-7 flex items-center justify-center rounded-lg border border-[#e2e8f0] text-[#7a7486] hover:border-[#ba1a1a] hover:text-[#ba1a1a] hover:bg-[#fef2f2] transition-colors shrink-0"
             >
@@ -274,56 +284,58 @@ function DashFavCard({ fav, onDelete }: { fav: FavItem; onDelete: (id: string) =
             </button>
           </div>
 
-          {/* Title */}
-          <h3 className="text-base font-bold text-[#0b1c30] mb-3 leading-snug">{fav.title}</h3>
+          {/* Clickable body — navigates to career detail */}
+          <button
+            type="button"
+            onClick={() => router.push(`/career/${fav.careerSlug}`)}
+            className="flex-1 text-left px-4 pb-4 flex flex-col hover:bg-[#f8f9ff] transition-colors"
+          >
+            <h3 className="text-base font-bold text-[#0b1c30] mb-3 leading-snug hover:text-[#1a56db] transition-colors">{fav.title}</h3>
 
-          {/* Market data */}
-          <div className="space-y-1 mb-3 text-sm">
-            <MarketTrend outlook={fav.marketOutlook} label={fav.marketLabel} />
-            <span className="flex items-center gap-1 text-[#006591]">
-              <IconBriefcase />
-              <span>{fav.salaryRange}</span>
-            </span>
-          </div>
-
-          {/* Synergy */}
-          <p className="text-xs text-[#494455] leading-relaxed mb-3">{fav.synergy}</p>
-
-          {/* Pros / Cons */}
-          <div className="border-t border-[#e2e8f0] pt-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="flex items-center gap-1 mb-1.5">
-                  <IconShield />
-                  <span className="text-[10px] font-bold text-[#006591] uppercase tracking-widest">Pros</span>
-                </div>
-                <ul className="space-y-1">
-                  {fav.pros.slice(0, 3).map((p) => (
-                    <li key={p} className="flex items-start gap-1.5 text-xs text-[#0b1c30] leading-snug">
-                      <span className="text-[#1a56db] font-bold shrink-0 mt-px">•</span>
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <div className="flex items-center gap-1 mb-1.5">
-                  <IconXCircle />
-                  <span className="text-[10px] font-bold text-[#ba1a1a] uppercase tracking-widest">Cons</span>
-                </div>
-                <ul className="space-y-1">
-                  {fav.cons.slice(0, 3).map((c) => (
-                    <li key={c} className="flex items-start gap-1.5 text-xs text-[#0b1c30] leading-snug">
-                      <span className="text-[#ba1a1a] font-bold shrink-0 mt-px">•</span>
-                      {c}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="space-y-1 mb-3 text-sm">
+              <MarketTrend outlook={fav.marketOutlook} label={fav.marketLabel} />
+              <span className="flex items-center gap-1 text-[#006591]">
+                <IconBriefcase />
+                <span>{fav.salaryRange}</span>
+              </span>
             </div>
 
-            <p className="text-[11px] text-[#7a7486] mt-3">Saved from search on {fav.fromSearch}</p>
-          </div>
+            <p className="text-xs text-[#494455] leading-relaxed mb-3">{fav.synergy}</p>
+
+            <div className="border-t border-[#e2e8f0] pt-3 mt-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <IconShield />
+                    <span className="text-[10px] font-bold text-[#006591] uppercase tracking-widest">Pros</span>
+                  </div>
+                  <ul className="space-y-1">
+                    {fav.pros.slice(0, 3).map((p) => (
+                      <li key={p} className="flex items-start gap-1.5 text-xs text-[#0b1c30] leading-snug">
+                        <span className="text-[#1a56db] font-bold shrink-0 mt-px">•</span>
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <IconXCircle />
+                    <span className="text-[10px] font-bold text-[#ba1a1a] uppercase tracking-widest">Cons</span>
+                  </div>
+                  <ul className="space-y-1">
+                    {fav.cons.slice(0, 3).map((c) => (
+                      <li key={c} className="flex items-start gap-1.5 text-xs text-[#0b1c30] leading-snug">
+                        <span className="text-[#ba1a1a] font-bold shrink-0 mt-px">•</span>
+                        {c}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <p className="text-[11px] text-[#7a7486] mt-3">Saved from search on {fav.fromSearch}</p>
+            </div>
+          </button>
         </>
       )}
     </div>
@@ -423,13 +435,31 @@ export default function DashboardPage() {
                 <h2 className="text-sm font-bold text-[#0b1c30]">Your Personality Profile</h2>
               </div>
               <p className="text-[11px] text-[#7a7486] mb-4">Most recent search — {LAST_SEARCH_DATE}</p>
-              <div className="grid grid-cols-2 gap-2">
-                {PERSONALITY_SNAPSHOT.map(({ label, value }) => (
-                  <div key={label} className="rounded-lg border border-[#e2e8f0] bg-[#f8f9ff] px-3 py-2">
-                    <p className="text-[9px] font-bold text-[#7a7486] uppercase tracking-widest mb-0.5">{label}</p>
-                    <p className="text-[11px] font-semibold text-[#0b1c30] leading-snug">{value}</p>
+              <div className="grid grid-cols-2 gap-3">
+                {/* Assessments column */}
+                <div>
+                  <p className="text-[9px] font-bold text-[#1a56db] uppercase tracking-widest mb-2">Assessments</p>
+                  <div className="space-y-1.5">
+                    {ASSESSMENT_SNAPSHOT.map(({ label, value }) => (
+                      <div key={label} className="rounded-lg border border-[#e2e8f0] bg-[#f8f9ff] px-2.5 py-1.5">
+                        <p className="text-[8px] font-bold text-[#7a7486] uppercase tracking-widest mb-0.5">{label}</p>
+                        <p className="text-[10px] font-semibold text-[#0b1c30] leading-snug">{value}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+                {/* Preferences column */}
+                <div>
+                  <p className="text-[9px] font-bold text-[#1a56db] uppercase tracking-widest mb-2">Preferences</p>
+                  <div className="space-y-1.5">
+                    {PREFERENCE_SNAPSHOT.map(({ label, value }) => (
+                      <div key={label} className="rounded-lg border border-[#e2e8f0] bg-[#f8f9ff] px-2.5 py-1.5">
+                        <p className="text-[8px] font-bold text-[#7a7486] uppercase tracking-widest mb-0.5">{label}</p>
+                        <p className="text-[10px] font-semibold text-[#0b1c30] leading-snug">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -452,7 +482,7 @@ export default function DashboardPage() {
                 {RECENT_HISTORY.map((entry) => (
                   <Link
                     key={entry.id}
-                    href="/search"
+                    href="/search?autorun=true"
                     className="block rounded-xl border border-[#e2e8f0] px-4 py-3 hover:border-[#1a56db]/40 hover:bg-[#f8f9ff] transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">

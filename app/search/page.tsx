@@ -65,16 +65,22 @@ function ChevronRight({ className = "w-4 h-4" }: { className?: string }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-type View = "form" | "sliding" | "loading" | "results";
+type View = "idle" | "loading" | "results";
 
 export default function SearchPage() {
   const [preload, setPreload] = useState(false);
+  const [view, setView] = useState<View>("idle");
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setPreload(params.get("restore") === "true");
+    // ?restore=true  → "Search Again": idle state + preload banner
+    // ?autorun=true  → history items: jump straight to results, no banner
+    if (params.get("autorun") === "true") {
+      setView("results");
+    } else if (params.get("restore") === "true") {
+      setPreload(true);
+    }
   }, []);
-
-  const [view, setView] = useState<View>("form");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"recommended" | "flagged">("recommended");
   const [domainFilter, setDomainFilter] = useState<CareerDomain>("All Domains");
@@ -114,41 +120,34 @@ export default function SearchPage() {
     });
   }
 
-  // ── Submit from form page ──
-  // The page form overlay fades+slides out while the sidebar expands from the left.
-  // All elements stay in the DOM — CSS transitions do the actual animating.
-  function handleFirstSubmit() {
-    setView("sliding"); // overlay fades out, sidebar expands, results panel appears
-
-    // After the 500ms slide animation, mark as "loading" (visual state unchanged)
-    setTimeout(() => setView("loading"), 500);
-
-    // 3 seconds from first click → show results
-    setTimeout(() => {
-      setResultSet(pickRandom());
-      setView("results");
-    }, 3000);
-  }
-
-  // ── Re-submit from sidebar ──
-  function handleReSubmit() {
-    if (isCalculatingRef.current) return;
-    isCalculatingRef.current = true;
-    setIsCalculating(true);
-    setTimeout(() => {
-      setResultSet((prev) => pickRandom(prev));
-      setActiveTab("recommended");
-      setDomainFilter("All Domains");
-      setFavourites(new Set());
-      setIsCalculating(false);
-      isCalculatingRef.current = false;
-    }, 700);
+  // ── Submit from sidebar ──
+  function handleSubmit() {
+    if (view === "results") {
+      // Re-submit: quick recalculation
+      if (isCalculatingRef.current) return;
+      isCalculatingRef.current = true;
+      setIsCalculating(true);
+      setTimeout(() => {
+        setResultSet((prev) => pickRandom(prev));
+        setActiveTab("recommended");
+        setDomainFilter("All Domains");
+        setFavourites(new Set());
+        setIsCalculating(false);
+        isCalculatingRef.current = false;
+      }, 700);
+    } else {
+      // First submit from idle: full loading screen
+      setView("loading");
+      setTimeout(() => {
+        setResultSet(pickRandom());
+        setView("results");
+      }, 3000);
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleValuesChange(_next: AssessmentValues) {}
 
-  const isForm = view === "form";
   const showResults = view === "results";
 
   return (
@@ -158,75 +157,13 @@ export default function SearchPage() {
     >
       <AppNav active="search" />
 
-      {/*
-        Single persistent flex container — never unmounts.
-        The page-form overlay sits on top (absolute, z-10).
-        When the user submits, the overlay slides left and fades out,
-        the sidebar expands from width:0, and the results panel fades in.
-        All via CSS transitions on the same DOM nodes.
-
-        NOTE: overflow:hidden is on a wrapper around the form overlay only,
-        not the parent flex container, so the toggle button (a sibling) is
-        never clipped.
-      */}
       <div className="relative flex min-h-[calc(100vh-56px)]">
 
-        {/* ── Page-form overlay ───────────────────────────────────────────── */}
-        {/* Wrapped in its own overflow:hidden so translateX doesn't bleed out */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 10,
-            overflow: "hidden",
-            pointerEvents: isForm ? "auto" : "none",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              overflowY: "auto",
-              background: "#F8FAFC",
-              opacity: isForm ? 1 : 0,
-              transform: isForm ? "translateX(0)" : "translateX(-80px)",
-              transition: "opacity 450ms ease, transform 450ms ease",
-            }}
-          >
-            <div className="p-6 md:p-8">
-              {preload && (
-                <div className="max-w-5xl mx-auto mb-5">
-                  <div className="flex items-start gap-3 bg-[#dbeafe] border border-[#1a56db]/20 rounded-xl px-5 py-4">
-                    <svg className="w-5 h-5 text-[#1a56db] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                      <p className="text-sm font-semibold text-[#1a56db]">Your previous search has been pre-loaded</p>
-                      <p className="text-xs text-[#494455] mt-0.5">
-                        We restored your inputs from your last search on <span className="font-semibold">Jun 12, 2026</span>.
-                        Adjust below or submit as-is.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <AssessmentForm
-                layout="page"
-                preload={preload}
-                onValuesChange={handleValuesChange}
-                onSubmit={handleFirstSubmit}
-              />
-            </div>
-          </div>
-        </div>
-
         {/* ── Sidebar ─────────────────────────────────────────────────────── */}
-        {/* Starts at width:0 (hidden behind the overlay), expands on submit.
-            overflow:hidden clips the 320px inner content during animation.
-            NOTE: no toggle button inside here — it lives as a sibling below. */}
         <div
           className="hidden md:block flex-shrink-0"
           style={{
-            width: isForm ? 0 : sidebarOpen ? "320px" : "0px",
+            width: sidebarOpen ? "320px" : "0px",
             transition: "width 500ms cubic-bezier(0.4, 0, 0.2, 1)",
             overflow: "hidden",
           }}
@@ -237,39 +174,60 @@ export default function SearchPage() {
               layout="sidebar"
               preload={preload}
               onValuesChange={handleValuesChange}
-              onSubmit={handleReSubmit}
+              onSubmit={handleSubmit}
               isLoading={isCalculating}
             />
           </div>
         </div>
 
         {/* ── Sidebar toggle button ────────────────────────────────────────── */}
-        {/* Sibling to the sidebar so it is never clipped by sidebar's overflow:hidden.
-            Its `left` tracks the sidebar width with the same transition. */}
-        {!isForm && (
-          <button
-            onClick={() => setSidebarOpen((o) => !o)}
-            title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-            className="hidden md:flex absolute top-3 z-20 w-6 h-6 bg-white border border-[#e2e8f0] rounded-full shadow-sm items-center justify-center text-[#1a56db] hover:bg-[#eff6ff]"
-            style={{
-              left: sidebarOpen ? "calc(320px - 12px)" : "4px",
-              transition: "left 500ms cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            {sidebarOpen ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-          </button>
-        )}
-
-        {/* ── Results / Loading panel ──────────────────────────────────────── */}
-        {/* Fades in as the sidebar expands; always takes remaining flex space */}
-        <main
-          className="flex-1 p-6 md:p-8 overflow-y-auto min-w-0"
+        <button
+          onClick={() => setSidebarOpen((o) => !o)}
+          title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          className="hidden md:flex absolute top-3 z-20 w-6 h-6 bg-white border border-[#e2e8f0] rounded-full shadow-sm items-center justify-center text-[#1a56db] hover:bg-[#eff6ff]"
           style={{
-            opacity: isForm ? 0 : 1,
-            transition: "opacity 400ms ease 250ms", // slight delay so sidebar leads
+            left: sidebarOpen ? "calc(320px - 12px)" : "4px",
+            transition: "left 500ms cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
-          {!showResults ? (
+          {sidebarOpen ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+        </button>
+
+        {/* ── Results / Loading / Idle panel ──────────────────────────────── */}
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto min-w-0">
+          {/* Preload banner — shown whenever inputs are restored, except during loading */}
+          {preload && view !== "loading" && (
+            <div className="mb-5">
+              <div className="flex items-start gap-3 bg-[#dbeafe] border border-[#1a56db]/20 rounded-xl px-5 py-4">
+                <svg className="w-5 h-5 text-[#1a56db] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-[#1a56db]">Your previous search has been pre-loaded</p>
+                  <p className="text-xs text-[#494455] mt-0.5">
+                    We restored your inputs from your last search on <span className="font-semibold">Jun 12, 2026</span>.
+                    Adjust on the left or submit as-is to generate new results.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {view === "idle" ? (
+            /* ── Idle placeholder ── */
+            <div className="flex flex-col h-full">
+              <div className="flex flex-col items-center justify-center flex-1 text-center py-20">
+                <div className="w-16 h-16 rounded-2xl bg-[#dbeafe] flex items-center justify-center mb-5">
+                  <svg className="w-8 h-8 text-[#1a56db]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-[#0b1c30] mb-2">Career Path Results</h2>
+                <p className="text-sm text-[#494455] max-w-sm leading-relaxed">
+                  Enter your personality assessment information on the left and submit to generate your personalised career path results.
+                </p>
+              </div>
+            </div>
+          ) : view === "loading" ? (
             /* ── Loading screen ── */
             <div className="flex flex-col items-center justify-center py-32">
               <div className="w-12 h-12 border-4 border-[#dbeafe] border-t-[#1a56db] rounded-full animate-spin mb-6" />

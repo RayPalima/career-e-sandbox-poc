@@ -101,7 +101,7 @@ export default function ResultsHistoryPage() {
                     Share / Export
                   </button>
                   <Link
-                    href="/search"
+                    href="/search?autorun=true"
                     className="inline-flex items-center justify-center border-2 border-[#1a56db] text-[#1a56db] font-semibold text-sm px-5 py-2 rounded hover:bg-[#1a56db]/5 transition-colors"
                   >
                     View Results

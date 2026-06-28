@@ -18,7 +18,7 @@ export const ASSESSMENT_HELP: Record<string, AssessmentHelp> = {
   },
   spark: {
     description:
-      "Sparketype identifies the work that makes you feel most alive — your Primary drive, a Secondary complement, and an Anti-Sparketype that drains your energy.",
+      "Sparketype identifies the work that makes you feel most alive. Your Primary drive, a Secondary complement, and an Anti-Sparketype that drains your energy.",
     providerUrl: "[insert link here]",
     providerLabel: "Sparketype Official",
     goodToKnow: [
@@ -28,7 +28,7 @@ export const ASSESSMENT_HELP: Record<string, AssessmentHelp> = {
   },
   clifton: {
     description:
-      "CliftonStrengths (Gallup) identifies your top talent themes from 34 strengths — the natural patterns of thinking, feeling, and behaving you do best.",
+      "CliftonStrengths (Gallup) identifies your top talent themes from 34 strengths. The natural patterns of thinking, feeling, and behaving you do best.",
     providerUrl: "[insert link here]",
     providerLabel: "Gallup CliftonStrengths",
     goodToKnow: [
@@ -51,7 +51,7 @@ export const ASSESSMENT_HELP: Record<string, AssessmentHelp> = {
   },
   ennea: {
     description:
-      "The Enneagram maps nine motivational types based on core fears, desires, and growth paths — revealing why you do what you do, not just how.",
+      "The Enneagram maps nine motivational types based on core fears, desires, and growth paths. It reveals why you do what you do, not just how.",
     providerUrl: "[insert link here]",
     providerLabel: "Enneagram Institute",
     goodToKnow: [
@@ -71,7 +71,7 @@ export const ASSESSMENT_HELP: Record<string, AssessmentHelp> = {
   },
   disc: {
     description:
-      "DiSC measures behavioral style across Dominance, Influence, Steadiness, and Conscientiousness — how you respond to workplace challenges and collaboration.",
+      "DiSC measures behavioral style across Dominance, Influence, Steadiness, and Conscientiousness. It's how you respond to workplace challenges and collaboration.",
     providerUrl: "[insert link here]",
     providerLabel: "DiSC Profile",
     goodToKnow: [
@@ -91,7 +91,7 @@ export const ASSESSMENT_HELP: Record<string, AssessmentHelp> = {
   },
   astro: {
     description:
-      "Sun sign astrology provides a broad archetypal lens based on birth date. Included as an optional, low-weight supplementary input.",
+      "Sun sign astrology provides a broad archetypal lens based on birth date.",
     providerUrl: "[insert link here]",
     providerLabel: "Astro.com",
     goodToKnow: [
@@ -101,7 +101,7 @@ export const ASSESSMENT_HELP: Record<string, AssessmentHelp> = {
   },
   additional: {
     description:
-      "Optional inputs that enhance career path results. Enable only the fields relevant to you — each is weighted into the matching engine when active.",
+      "Optional inputs that enhance career path results. Enable only the fields relevant to you.",
     providerUrl: "[insert link here]",
     providerLabel: "Career-E-Sandbox Docs",
     goodToKnow: [

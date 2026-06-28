@@ -24,7 +24,7 @@ import {
 
 export interface AssessmentValues {
   mbtiType: string;
-  variant: "A" | "T";
+  variant: "A" | "T" | "";
   workEnv: WorkEnv;
   targetEduIndex: number;
 }
@@ -157,31 +157,57 @@ function BigFiveSlider({
 }
 
 function AccordionSection({
-  title, isOpen, onToggle, children, compact,
+  title, isOpen, onToggle, children, compact, helpKey,
 }: {
   title: string;
   isOpen: boolean;
   onToggle: () => void;
   children: React.ReactNode;
   compact?: boolean;
+  helpKey?: keyof typeof ASSESSMENT_HELP;
 }) {
+  const [helpOpen, setHelpOpen] = useState(false);
+  const anyOpen = isOpen || helpOpen;
+
   return (
-    <div className={`border-b ${isOpen ? "border-[#cac3d8]/60" : "border-[#e2e8f0]"}`}>
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`w-full flex items-center justify-between ${compact ? "px-6 py-4" : "px-5 py-4"} text-sm font-semibold text-[#0b1c30] transition-colors ${
-          isOpen ? "bg-[#f8f9ff]" : "hover:bg-[#f8f9ff]"
-        }`}
-      >
-        <span>{title}</span>
-        <span className={isOpen ? "text-[#1a56db]" : "text-[#7a7486]"}>
-          {isOpen ? <ChevronUp /> : <ChevronDown />}
-        </span>
-      </button>
-      {isOpen && (
-        <div className={`${compact ? "px-6" : "px-5"} pb-5 bg-[#f8f9ff] border-t border-[#1a56db]/20`}>
-          <div className="pt-4 space-y-4">{children}</div>
+    <div className={`border-b ${anyOpen ? "border-[#cac3d8]/60" : "border-[#e2e8f0]"}`}>
+      <div className={`flex items-center gap-1 ${compact ? "px-6 py-4" : "px-5 py-4"} ${anyOpen ? "bg-[#f8f9ff]" : "hover:bg-[#f8f9ff]"} transition-colors`}>
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex-1 flex items-center justify-between text-sm font-semibold text-[#0b1c30] text-left"
+        >
+          <span>{title}</span>
+          <span className={isOpen ? "text-[#1a56db]" : "text-[#7a7486]"}>
+            {isOpen ? <ChevronUp /> : <ChevronDown />}
+          </span>
+        </button>
+        {helpKey && (
+          <button
+            type="button"
+            onClick={() => setHelpOpen((p) => !p)}
+            className={`ml-2 w-7 h-7 rounded-lg border font-bold text-sm leading-none transition-colors shrink-0 ${
+              helpOpen
+                ? "bg-[#1a56db] border-[#1a56db] text-white"
+                : "border-[#e2e8f0] text-[#7a7486] hover:border-[#1a56db] hover:text-[#1a56db]"
+            }`}
+          >
+            ?
+          </button>
+        )}
+      </div>
+      {anyOpen && (
+        <div className={`${compact ? "px-6" : "px-5"} pb-5 bg-[#f8f9ff] border-t border-[#e2e8f0]`}>
+          {helpOpen && helpKey && (
+            <div className="pt-4">
+              <InlineHelpPanel helpKey={helpKey} />
+            </div>
+          )}
+          {isOpen && (
+            <div className={`space-y-4 ${helpOpen ? "mt-4 pt-4 border-t border-[#e2e8f0]" : "pt-4"}`}>
+              {children}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -314,7 +340,7 @@ export default function AssessmentForm({
   const [enabledOptional, setEnabledOptional] = useState<Set<string>>(new Set());
 
   const [mbtiType, setMbtiType] = useState("INTJ");
-  const [variant, setVariant] = useState<"A" | "T">("A");
+  const [variant, setVariant] = useState<"A" | "T" | "">("");
   const [primarySpark, setPrimarySpark] = useState(usePrefill ? "Maven" : "");
   const [secondarySpark, setSecondarySpark] = useState(usePrefill ? "Sage" : "");
   const [antiSpark, setAntiSpark] = useState(usePrefill ? "Advisor" : "");
@@ -406,17 +432,20 @@ export default function AssessmentForm({
         />
       </div>
       <div>
-        <FieldLabel>Variant Modifier</FieldLabel>
+        <div className="flex items-center gap-2 mb-2">
+          <FieldLabel>Variant Modifier</FieldLabel>
+          <span className="text-[9px] font-semibold text-[#7a7486] uppercase tracking-widest -mt-2">(optional)</span>
+        </div>
         <div className="flex gap-2">
           {(["A", "T"] as const).map((v) => (
             <button
               key={v}
               type="button"
-              onClick={() => setVariant(v)}
+              onClick={() => setVariant((prev) => prev === v ? "" : v)}
               className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors ${
                 variant === v
-                  ? "bg-[#1a56db] text-white"
-                  : "bg-white text-[#494455] border border-[#e2e8f0] hover:border-[#1a56db]"
+                  ? "bg-[#1a56db] text-white border border-[#1a56db]"
+                  : "bg-white text-[#7a7486] border border-[#e2e8f0] hover:border-[#1a56db] hover:text-[#1a56db]"
               }`}
             >
               {v === "A" ? "Assertive (-A)" : "Turbulent (-T)"}
@@ -629,7 +658,7 @@ export default function AssessmentForm({
         </div>
 
         <div>
-          <h2 className="text-xs font-bold text-[#1a56db] uppercase tracking-widest mb-4">Additional Information</h2>
+          <h2 className="text-xs font-bold text-[#1a56db] uppercase tracking-widest mb-4">Preference</h2>
           <CollapsibleCard
             id="additional"
             title="Optional Inputs"
@@ -680,7 +709,7 @@ export default function AssessmentForm({
                 : "text-[#7a7486] hover:text-[#494455]"
             }`}
           >
-            {tab === "assessments" ? "Assessments" : "Additional Info"}
+            {tab === "assessments" ? "Assessments" : "Preference"}
           </button>
         ))}
       </div>
@@ -688,23 +717,23 @@ export default function AssessmentForm({
       <div className="flex-1 overflow-y-auto min-h-0">
         {sidebarTab === "assessments" && (
           <div>
-            <AccordionSection title="Astrology" isOpen={openSections.has("astro")} onToggle={() => toggleSection("astro")} compact>
+            <AccordionSection title="Astrology" isOpen={openSections.has("astro")} onToggle={() => toggleSection("astro")} helpKey="astro" compact>
               <div><FieldLabel>Sun Sign</FieldLabel><StyledSelect value={sunSign} onChange={setSunSign} options={SUN_SIGNS} placeholder="Select sign..." /></div>
             </AccordionSection>
-            <AccordionSection title="Big Five Model" isOpen={openSections.has("bigfive")} onToggle={() => toggleSection("bigfive")} compact>{bigFiveFields}</AccordionSection>
-            <AccordionSection title="Chinese Zodiac" isOpen={openSections.has("zodiac")} onToggle={() => toggleSection("zodiac")} compact>
+            <AccordionSection title="Big Five Model" isOpen={openSections.has("bigfive")} onToggle={() => toggleSection("bigfive")} helpKey="bigfive" compact>{bigFiveFields}</AccordionSection>
+            <AccordionSection title="Chinese Zodiac" isOpen={openSections.has("zodiac")} onToggle={() => toggleSection("zodiac")} helpKey="zodiac" compact>
               <div><FieldLabel>Animal</FieldLabel><StyledSelect value={zodiacAnimal} onChange={setZodiacAnimal} options={ZODIAC_ANIMALS} placeholder="Select animal..." /></div>
               <div><FieldLabel>Element</FieldLabel><StyledSelect value={zodiacElement} onChange={setZodiacElement} options={ZODIAC_ELEMENTS} placeholder="Select element..." /></div>
             </AccordionSection>
-            <AccordionSection title="CliftonStrengths" isOpen={openSections.has("clifton")} onToggle={() => toggleSection("clifton")} compact>{cliftonFields}</AccordionSection>
-            <AccordionSection title="DiSC Assessment" isOpen={openSections.has("disc")} onToggle={() => toggleSection("disc")} compact>
+            <AccordionSection title="CliftonStrengths" isOpen={openSections.has("clifton")} onToggle={() => toggleSection("clifton")} helpKey="clifton" compact>{cliftonFields}</AccordionSection>
+            <AccordionSection title="DiSC Assessment" isOpen={openSections.has("disc")} onToggle={() => toggleSection("disc")} helpKey="disc" compact>
               <div><FieldLabel>Primary Style</FieldLabel><StyledSelect value={discStyle} onChange={setDiscStyle} options={DISC_STYLES} placeholder="Select style..." /></div>
             </AccordionSection>
-            <AccordionSection title="Enneagram" isOpen={openSections.has("ennea")} onToggle={() => toggleSection("ennea")} compact>
+            <AccordionSection title="Enneagram" isOpen={openSections.has("ennea")} onToggle={() => toggleSection("ennea")} helpKey="ennea" compact>
               <div><FieldLabel>Core Type</FieldLabel><StyledSelect value={enneagramType} onChange={setEnneagramType} options={ENNEAGRAM_OPTIONS} placeholder="Select type..." /></div>
             </AccordionSection>
-            <AccordionSection title="Myers-Briggs (MBTI)" isOpen={openSections.has("mbti")} onToggle={() => toggleSection("mbti")} compact>{mbtiFields}</AccordionSection>
-            <AccordionSection title="Sparketype" isOpen={openSections.has("spark")} onToggle={() => toggleSection("spark")} compact>{sparkFields}</AccordionSection>
+            <AccordionSection title="Myers-Briggs (MBTI)" isOpen={openSections.has("mbti")} onToggle={() => toggleSection("mbti")} helpKey="mbti" compact>{mbtiFields}</AccordionSection>
+            <AccordionSection title="Sparketype" isOpen={openSections.has("spark")} onToggle={() => toggleSection("spark")} helpKey="spark" compact>{sparkFields}</AccordionSection>
           </div>
         )}
         {sidebarTab === "additional" && (

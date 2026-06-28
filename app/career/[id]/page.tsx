@@ -236,15 +236,14 @@ function QuartileFilter({ value, onChange }: { value: Quartile; onChange: (v: Qu
   );
 }
 
-function RankingRow({ rank, item, isUser, quartile }: { rank: number; item: TypeRanking; isUser: boolean; quartile: 1 | 2 | 3 | 4 }) {
+function RankingRow({ rank, item, quartile }: { rank: number; item: TypeRanking; quartile: 1 | 2 | 3 | 4 }) {
   const meta = QUARTILE_META[quartile];
   return (
-    <div className={`flex items-start gap-3 px-4 py-3 rounded-xl border transition-colors ${isUser ? "border-[#1a56db] bg-[#eff6ff]" : "border-[#e2e8f0] bg-white hover:bg-[#f8faff]"}`}>
-      <span className={`text-sm font-bold w-6 shrink-0 text-center mt-0.5 ${isUser ? "text-[#1a56db]" : "text-[#7a7486]"}`}>{rank}</span>
+    <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-[#e2e8f0] bg-white hover:bg-[#f8faff] transition-colors">
+      <span className="text-sm font-bold w-6 shrink-0 text-center mt-0.5 text-[#7a7486]">{rank}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <span className={`text-sm font-bold ${isUser ? "text-[#1a56db]" : "text-[#0b1c30]"}`}>{item.type}</span>
-          {isUser && <span className="text-[10px] font-bold bg-[#1a56db] text-white px-1.5 py-0.5 rounded-full">Your type</span>}
+          <span className="text-sm font-bold text-[#0b1c30]">{item.type}</span>
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto ${meta.badge}`}>{meta.label}</span>
         </div>
         <div className="flex items-center gap-2 mb-1">
@@ -260,12 +259,11 @@ function RankingRow({ rank, item, isUser, quartile }: { rank: number; item: Type
 }
 
 function RankingPanel({
-  title, icon, items, userType, filter, onFilterChange, note,
+  title, icon, items, filter, onFilterChange, note,
 }: {
   title: string;
   icon: React.ReactNode;
   items: TypeRanking[];
-  userType: string;
   filter: Quartile;
   onFilterChange: (v: Quartile) => void;
   note?: string;
@@ -276,7 +274,7 @@ function RankingPanel({
     : sorted.filter((_, i) => getQuartile(i + 1, sorted.length) === parseInt(filter[1]));
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+    <div>
       <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
         <div className="flex items-center gap-2">
           {icon}
@@ -308,7 +306,6 @@ function RankingPanel({
               key={item.type}
               rank={filter === "all" ? i + 1 : globalRank}
               item={item}
-              isUser={item.type === userType}
               quartile={quartile}
             />
           );
@@ -323,20 +320,61 @@ function RankingPanel({
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+type Framework = "mbti" | "sparketype" | "astrology";
+
+const FRAMEWORK_OPTIONS: { value: Framework; label: string }[] = [
+  { value: "mbti", label: "Myers-Briggs (MBTI)" },
+  { value: "sparketype", label: "Sparketype" },
+  { value: "astrology", label: "Sun Sign (Astrology)" },
+];
+
 export default function CareerDetailPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
   const career = getCareerDetail(id);
 
-  const [mbtiFilter, setMbtiFilter] = useState<Quartile>("all");
-  const [sparkeFilter, setSparkeFilter] = useState<Quartile>("all");
-  const [astroFilter, setAstroFilter] = useState<Quartile>("all");
+  const [activeFramework, setActiveFramework] = useState<Framework>("mbti");
+  const [quartileFilter, setQuartileFilter] = useState<Quartile>("all");
 
-  const mbtiSorted = [...career.mbtiRankings].sort((a, b) => b.fitScore - a.fitScore);
-  const userRank = mbtiSorted.findIndex((t) => t.type === career.userType) + 1;
-  const userQuartile = getQuartile(userRank, mbtiSorted.length);
-  const userFitScore = mbtiSorted.find((t) => t.type === career.userType)?.fitScore ?? 0;
-  const userMeta = QUARTILE_META[userQuartile];
+  function handleFrameworkChange(fw: Framework) {
+    setActiveFramework(fw);
+    setQuartileFilter("all");
+  }
+
+  const frameworkConfig = {
+    mbti: {
+      title: "Myers-Briggs (MBTI) Fit Rankings",
+      items: career.mbtiRankings,
+      note: undefined,
+      icon: (
+        <svg className="w-4 h-4 text-[#1a56db]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      ),
+    },
+    sparketype: {
+      title: "Sparketype Fit Rankings",
+      items: career.sparketypeRankings,
+      note: "Supplementary signal — lower weight than validated psychometric frameworks. Use as directional guidance only.",
+      icon: (
+        <svg className="w-4 h-4 text-[#f59e0b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+    },
+    astrology: {
+      title: "Sun Sign (Astrology) Fit Rankings",
+      items: career.astrologyRankings,
+      note: "Exploratory only — not based on validated psychometric research. Included as a cultural supplementary lens.",
+      icon: (
+        <svg className="w-4 h-4 text-[#7a7486]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        </svg>
+      ),
+    },
+  };
+
+  const current = frameworkConfig[activeFramework];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]" style={{ fontFamily: "var(--font-geist-sans, Geist, sans-serif)" }}>
@@ -428,71 +466,38 @@ export default function CareerDetailPage() {
           </div>
 
           {/* ── RIGHT: Rankings (2/3 width) ── */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2">
 
-            {/* Your position callout */}
-            <section className="rounded-2xl border border-[#e2e8f0] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05)] px-5 py-4">
-              <p className="text-[11px] font-bold text-[#7a7486] uppercase tracking-widest mb-2">Your Position</p>
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${userMeta.badge}`}>
-                  {career.userType}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-[#0b1c30]">
-                    Ranked <span className={userMeta.text}>#{userRank} of {mbtiSorted.length}</span> MBTI types
-                  </p>
-                  <p className={`text-xs font-semibold ${userMeta.text}`}>{userMeta.label} · {userFitScore}% fit</p>
+            {/* Framework selector + panel */}
+            <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+              {/* Dropdown selector */}
+              <div className="flex items-center gap-3 mb-4 flex-wrap">
+                <p className="text-[11px] font-bold text-[#7a7486] uppercase tracking-widest shrink-0">View rankings by</p>
+                <div className="relative">
+                  <select
+                    value={activeFramework}
+                    onChange={(e) => handleFrameworkChange(e.target.value as Framework)}
+                    className="appearance-none bg-white border border-[#e2e8f0] rounded-lg px-3 py-1.5 text-sm font-semibold text-[#0b1c30] pr-8 focus:outline-none focus:border-[#1a56db] cursor-pointer"
+                  >
+                    {FRAMEWORK_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[#494455]">
+                    <ChevronDown />
+                  </span>
                 </div>
               </div>
-              <p className="text-xs text-[#494455] leading-relaxed">
-                {userQuartile <= 2
-                  ? "Strong alignment — your cognitive style is well-matched to this career's demands."
-                  : userQuartile === 3
-                  ? "Moderate alignment. Six or more MBTI types are a stronger natural fit, though this career is still achievable."
-                  : "Significant gaps exist between your natural style and this career's core demands. Awareness of these gaps is key."}
-              </p>
-            </section>
 
-            <RankingPanel
-              title="Myers-Briggs (MBTI) Fit Rankings"
-              icon={
-                <svg className="w-4 h-4 text-[#1a56db]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              }
-              items={career.mbtiRankings}
-              userType={career.userType}
-              filter={mbtiFilter}
-              onFilterChange={setMbtiFilter}
-            />
-
-            <RankingPanel
-              title="Sparketype Fit Rankings"
-              icon={
-                <svg className="w-4 h-4 text-[#f59e0b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              }
-              items={career.sparketypeRankings}
-              userType={career.userSparketype}
-              filter={sparkeFilter}
-              onFilterChange={setSparkeFilter}
-              note="Supplementary signal — lower weight than validated psychometric frameworks. Use as directional guidance only."
-            />
-
-            <RankingPanel
-              title="Sun Sign (Astrology) Fit Rankings"
-              icon={
-                <svg className="w-4 h-4 text-[#7a7486]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-              }
-              items={career.astrologyRankings}
-              userType={career.userSunSign}
-              filter={astroFilter}
-              onFilterChange={setAstroFilter}
-              note="Exploratory only — not based on validated psychometric research. Included as a cultural supplementary lens."
-            />
+              <RankingPanel
+                title={current.title}
+                icon={current.icon}
+                items={current.items}
+                filter={quartileFilter}
+                onFilterChange={setQuartileFilter}
+                note={current.note}
+              />
+            </div>
           </div>
 
         </div>
